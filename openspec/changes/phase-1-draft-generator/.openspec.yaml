@@ -1,0 +1,7 @@
+change: phase-1-draft-generator
+status: proposed
+description: >
+  MVP Phase 1: CLI that analyzes a local or remote repo, extracts features/changelogs,
+  and generates grounded marketing drafts using copywriting frameworks.
+  No publishing, no connectors. Pure draft generation with terminal review.
+created: 2026-04-22
