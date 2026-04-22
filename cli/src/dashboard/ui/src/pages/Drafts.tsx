@@ -7,10 +7,10 @@ import { X, Check, Trash2, FileText, Eye, ChevronRight, Hash, ExternalLink } fro
 import { cn, formatRelativeTime } from "../lib/utils"
 
 const statusConfig: Record<string, { label: string; bg: string; text: string; dot: string }> = {
-  pending: { label: "Pending", bg: "bg-amber-50", text: "text-amber-700", dot: "bg-amber-400" },
-  approved: { label: "Approved", bg: "bg-emerald-50", text: "text-emerald-700", dot: "bg-emerald-400" },
-  rejected: { label: "Rejected", bg: "bg-red-50", text: "text-red-700", dot: "bg-red-400" },
-  published: { label: "Published", bg: "bg-blue-50", text: "text-blue-700", dot: "bg-blue-400" },
+  pending: { label: "Pending", bg: "bg-[#fff8c5]", text: "text-[#9a6700]", dot: "bg-[#bf8700]" },
+  approved: { label: "Approved", bg: "bg-[#dafbe1]", text: "text-[#1a7f37]", dot: "bg-[#2da44e]" },
+  rejected: { label: "Rejected", bg: "bg-[#ffebe9]", text: "text-[#cf222e]", dot: "bg-[#cf222e]" },
+  published: { label: "Published", bg: "bg-[#ddf4ff]", text: "text-[#0969da]", dot: "bg-[#0969da]" },
 }
 
 const platformIcons: Record<string, string> = {
@@ -89,8 +89,8 @@ export default function Drafts() {
             className={cn(
               "rounded-full px-4 py-1.5 text-[13px] font-medium transition-colors",
               statusFilter === s
-                ? "bg-slate-900 text-white"
-                : "bg-slate-100 text-slate-500 hover:bg-slate-200",
+                ? "bg-[#24292f] text-white"
+                : "bg-[#f6f8fa] text-[#656d76] hover:bg-[#eaeef2]",
             )}
           >
             {s || "All"}
@@ -101,7 +101,7 @@ export default function Drafts() {
           <select
             value={platformFilter}
             onChange={(e) => setPlatformFilter(e.target.value)}
-            className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-[13px] text-slate-600 outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
+            className="rounded-md border border-[#d0d7de] bg-white px-3 py-1.5 text-[13px] text-[#656d76] outline-none focus:border-[#0969da] focus:ring-2 focus:ring-[#ddf4ff]"
           >
             <option value="">All platforms</option>
             <option value="x">X</option>
@@ -113,12 +113,12 @@ export default function Drafts() {
       </div>
 
       {!drafts?.length ? (
-        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 py-16">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-50">
-            <FileText size={24} className="text-slate-300" />
+        <div className="flex flex-col items-center justify-center rounded-md border border-dashed border-[#d0d7de] py-16">
+          <div className="flex h-14 w-14 items-center justify-center rounded-md bg-[#f6f8fa]">
+            <FileText size={24} className="text-[#d0d7de]" />
           </div>
-          <p className="mt-4 text-sm font-medium text-slate-400">No drafts found</p>
-          <p className="mt-1 text-[12px] text-slate-300">Generate content with: social-rig generate</p>
+          <p className="mt-4 text-[13px] font-medium text-[#656d76]">No drafts found</p>
+          <p className="mt-1 text-[12px] text-[#8b949e]">Generate content with: social-rig generate</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -126,22 +126,22 @@ export default function Drafts() {
             <div
               key={d.id}
               onClick={() => setSelectedId(d.id)}
-              className="group flex cursor-pointer items-center gap-4 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm transition-all hover:border-slate-200 hover:shadow-md"
+              className="group flex cursor-pointer items-center gap-4 rounded-md border border-[#d0d7de] bg-white p-4 transition-all hover:bg-[#f6f8fa]"
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50">
-                <FileText size={18} className="text-indigo-500" />
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-[#f6f8fa]">
+                <FileText size={18} className="text-[#656d76]" />
               </div>
 
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <p className="truncate text-sm font-semibold text-slate-800">
+                  <p className="truncate text-[13px] font-semibold text-[#1f2328]">
                     {d.content_type.replace(/_/g, " ")}
                   </p>
-                  <span className="shrink-0 rounded-md bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-500">
+                  <span className="shrink-0 rounded-full bg-[#f6f8fa] px-2 py-0.5 text-[11px] font-medium text-[#656d76]">
                     {d.framework}
                   </span>
                 </div>
-                <p className="mt-0.5 text-[12px] text-slate-400">
+                <p className="mt-0.5 text-[12px] text-[#8b949e]">
                   {formatRelativeTime(d.created_at)}
                 </p>
               </div>
@@ -153,13 +153,13 @@ export default function Drafts() {
                   <>
                     <button
                       onClick={() => updateStatus.mutate({ id: d.id, status: "approved" })}
-                      className="rounded-lg p-2 text-emerald-500 transition-colors hover:bg-emerald-50"
+                      className="rounded-md p-2 text-[#1a7f37] transition-colors hover:bg-[#dafbe1]"
                     >
                       <Check size={16} />
                     </button>
                     <button
                       onClick={() => updateStatus.mutate({ id: d.id, status: "rejected" })}
-                      className="rounded-lg p-2 text-red-400 transition-colors hover:bg-red-50"
+                      className="rounded-md p-2 text-[#cf222e] transition-colors hover:bg-[#ffebe9]"
                     >
                       <X size={16} />
                     </button>
@@ -167,13 +167,13 @@ export default function Drafts() {
                 )}
                 <button
                   onClick={() => deleteDraft.mutate(d.id)}
-                  className="rounded-lg p-2 text-slate-300 transition-colors hover:bg-slate-50 hover:text-red-400"
+                  className="rounded-md p-2 text-[#d0d7de] transition-colors hover:bg-[#ffebe9] hover:text-[#cf222e]"
                 >
                   <Trash2 size={16} />
                 </button>
               </div>
 
-              <ChevronRight size={16} className="text-slate-300 transition-transform group-hover:translate-x-0.5" />
+              <ChevronRight size={16} className="text-[#d0d7de] transition-transform group-hover:translate-x-0.5" />
             </div>
           ))}
         </div>
@@ -214,19 +214,19 @@ function DraftDetail({
 
   return (
     <div className="scrollbar-thin fixed inset-y-0 right-0 z-50 w-full max-w-[560px] overflow-y-auto bg-white shadow-2xl">
-      <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-100 bg-white/80 px-6 py-4 backdrop-blur-sm">
+      <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[#d0d7de] bg-white/90 px-6 py-4 backdrop-blur-sm">
         <div>
-          <h2 className="text-base font-bold text-slate-900">
+          <h2 className="text-base font-semibold text-[#1f2328]">
             {draft.content_type.replace(/_/g, " ")}
           </h2>
           <div className="mt-1 flex items-center gap-2">
-            <span className="text-[12px] text-slate-400">{draft.framework}</span>
+            <span className="text-[12px] text-[#656d76]">{draft.framework}</span>
             <StatusBadge status={draft.status} />
           </div>
         </div>
         <button
           onClick={onClose}
-          className="rounded-xl p-2 text-slate-400 transition-colors hover:bg-slate-100"
+          className="rounded-md p-2 text-[#656d76] transition-colors hover:bg-[#f6f8fa]"
         >
           <X size={18} />
         </button>
@@ -237,13 +237,13 @@ function DraftDetail({
           <div className="flex gap-3">
             <button
               onClick={onApprove}
-              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-emerald-500 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-emerald-600"
+              className="flex flex-1 items-center justify-center gap-2 rounded-md bg-[#2da44e] py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#1a7f37]"
             >
               <Check size={16} /> Approve
             </button>
             <button
               onClick={onReject}
-              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-red-500 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-600"
+              className="flex flex-1 items-center justify-center gap-2 rounded-md border border-[#d0d7de] bg-[#f6f8fa] py-2.5 text-sm font-semibold text-[#cf222e] transition-colors hover:bg-[#ffebe9]"
             >
               <X size={16} /> Reject
             </button>
@@ -251,7 +251,7 @@ function DraftDetail({
         )}
 
         <div>
-          <h3 className="mb-3 flex items-center gap-2 text-[12px] font-semibold uppercase tracking-wider text-slate-400">
+          <h3 className="mb-3 flex items-center gap-2 text-[12px] font-semibold uppercase tracking-wider text-[#656d76]">
             <Eye size={14} /> Platform Variants
           </h3>
           <div className="space-y-4">
@@ -260,24 +260,24 @@ function DraftDetail({
               return (
                 <div
                   key={v.id}
-                  className="overflow-hidden rounded-2xl border border-slate-100 bg-slate-50/50"
+                  className="overflow-hidden rounded-md border border-[#d0d7de]"
                 >
-                  <div className="flex items-center justify-between border-b border-slate-100 px-4 py-2.5">
+                  <div className="flex items-center justify-between border-b border-[#d0d7de] bg-[#f6f8fa] px-4 py-2.5">
                     <div className="flex items-center gap-2">
-                      <span className="flex h-6 w-6 items-center justify-center rounded-md bg-slate-900 text-[10px] font-bold text-white">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-md bg-[#24292f] text-[10px] font-bold text-white">
                         {platformIcons[v.platform.toLowerCase()] ?? v.platform[0]?.toUpperCase()}
                       </span>
-                      <span className="text-[13px] font-semibold text-slate-700">{v.platform}</span>
+                      <span className="text-[13px] font-semibold text-[#1f2328]">{v.platform}</span>
                     </div>
                     {v.char_count && (
-                      <span className="text-[11px] text-slate-400">{v.char_count} chars</span>
+                      <span className="text-[11px] text-[#8b949e]">{v.char_count} chars</span>
                     )}
                   </div>
                   <div className="p-4">
                     {v.headline && (
-                      <p className="mb-2 text-sm font-bold text-slate-800">{v.headline}</p>
+                      <p className="mb-2 text-sm font-semibold text-[#1f2328]">{v.headline}</p>
                     )}
-                    <div className="whitespace-pre-wrap text-[13px] leading-relaxed text-slate-600">
+                    <div className="whitespace-pre-wrap text-[13px] leading-relaxed text-[#1f2328]">
                       {v.body}
                     </div>
                     {hashtags.length > 0 && (
@@ -285,7 +285,7 @@ function DraftDetail({
                         {hashtags.map((tag: string, i: number) => (
                           <span
                             key={i}
-                            className="inline-flex items-center gap-0.5 rounded-md bg-indigo-50 px-2 py-0.5 text-[11px] font-medium text-indigo-600"
+                            className="inline-flex items-center gap-0.5 rounded-full bg-[#ddf4ff] px-2 py-0.5 text-[11px] font-medium text-[#0969da]"
                           >
                             <Hash size={10} />
                             {tag.replace(/^#/, "")}
@@ -294,7 +294,7 @@ function DraftDetail({
                       </div>
                     )}
                     {v.cta && (
-                      <div className="mt-3 flex items-center gap-1.5 text-[12px] font-medium text-indigo-500">
+                      <div className="mt-3 flex items-center gap-1.5 text-[12px] font-medium text-[#0969da]">
                         <ExternalLink size={12} />
                         {v.cta}
                       </div>
@@ -308,21 +308,21 @@ function DraftDetail({
 
         {sourceFacts && (
           <div>
-            <h3 className="mb-3 text-[12px] font-semibold uppercase tracking-wider text-slate-400">
+            <h3 className="mb-3 text-[12px] font-semibold uppercase tracking-wider text-[#656d76]">
               Source Facts
             </h3>
-            <div className="rounded-xl bg-slate-50 p-4">
+            <div className="rounded-md bg-[#f6f8fa] p-4">
               {Array.isArray(sourceFacts) ? (
                 <ul className="space-y-1.5">
-                  {sourceFacts.map((fact: string, i: number) => (
-                    <li key={i} className="flex items-start gap-2 text-[13px] text-slate-600">
-                      <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-slate-400" />
-                      {fact}
+                  {sourceFacts.map((fact: unknown, i: number) => (
+                    <li key={i} className="flex items-start gap-2 text-[13px] text-[#1f2328]">
+                      <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-[#656d76]" />
+                      {typeof fact === 'string' ? fact : typeof fact === 'object' && fact !== null && 'claim' in fact ? String((fact as Record<string, unknown>).claim) : JSON.stringify(fact)}
                     </li>
                   ))}
                 </ul>
               ) : (
-                <pre className="text-[12px] text-slate-500">
+                <pre className="text-[12px] text-[#656d76]">
                   {JSON.stringify(sourceFacts, null, 2)}
                 </pre>
               )}

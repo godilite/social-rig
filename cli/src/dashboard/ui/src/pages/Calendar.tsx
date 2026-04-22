@@ -8,11 +8,11 @@ import { cn } from "../lib/utils"
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
 const platformColors: Record<string, string> = {
-  x: "bg-slate-900 text-white",
-  twitter: "bg-slate-900 text-white",
-  linkedin: "bg-blue-600 text-white",
-  devto: "bg-slate-700 text-white",
-  hashnode: "bg-blue-500 text-white",
+  x: "bg-[#24292f] text-white",
+  twitter: "bg-[#24292f] text-white",
+  linkedin: "bg-[#0969da] text-white",
+  devto: "bg-[#1f2328] text-white",
+  hashnode: "bg-[#0969da] text-white",
 }
 
 function getMonthDays(year: number, month: number) {
@@ -97,32 +97,32 @@ export default function CalendarPage() {
         <div className="flex items-center gap-3">
           <button
             onClick={prev}
-            className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-slate-500 transition-colors hover:bg-slate-50"
+            className="flex h-9 w-9 items-center justify-center rounded-md border border-[#d0d7de] text-[#656d76] transition-colors hover:bg-[#f6f8fa]"
           >
             <ChevronLeft size={16} />
           </button>
-          <h2 className="min-w-[180px] text-center text-base font-semibold text-slate-900">
+          <h2 className="min-w-[180px] text-center text-base font-semibold text-[#1f2328]">
             {monthName}
           </h2>
           <button
             onClick={next}
-            className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 text-slate-500 transition-colors hover:bg-slate-50"
+            className="flex h-9 w-9 items-center justify-center rounded-md border border-[#d0d7de] text-[#656d76] transition-colors hover:bg-[#f6f8fa]"
           >
             <ChevronRight size={16} />
           </button>
         </div>
         <button
           onClick={() => setCurrent({ year: today.getFullYear(), month: today.getMonth() })}
-          className="rounded-lg px-3 py-1.5 text-[13px] font-medium text-slate-500 transition-colors hover:bg-slate-100"
+          className="rounded-md px-3 py-1.5 text-[13px] font-medium text-[#656d76] transition-colors hover:bg-[#f6f8fa]"
         >
           Today
         </button>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-slate-200">
-        <div className="grid grid-cols-7 border-b border-slate-200 bg-slate-50">
+      <div className="overflow-hidden rounded-md border border-[#d0d7de]">
+        <div className="grid grid-cols-7 border-b border-[#d0d7de] bg-[#f6f8fa]">
           {DAYS.map((d) => (
-            <div key={d} className="py-3 text-center text-[12px] font-semibold uppercase tracking-wider text-slate-400">
+            <div key={d} className="py-3 text-center text-[12px] font-semibold uppercase tracking-wider text-[#656d76]">
               {d}
             </div>
           ))}
@@ -132,17 +132,17 @@ export default function CalendarPage() {
             <div
               key={i}
               className={cn(
-                "min-h-[100px] border-b border-r border-slate-100 p-2 transition-colors last:border-r-0",
-                day.outside ? "bg-slate-50/50" : "bg-white hover:bg-slate-50/50",
+                "min-h-[100px] border-b border-r border-[#d8dee4] p-2 transition-colors last:border-r-0",
+                day.outside ? "bg-[#f6f8fa]" : "bg-white hover:bg-[#f6f8fa]",
                 i % 7 === 6 && "border-r-0",
               )}
             >
               <div
                 className={cn(
                   "mb-1 flex h-7 w-7 items-center justify-center rounded-full text-[13px] font-medium",
-                  day.outside && "text-slate-300",
-                  !day.outside && "text-slate-600",
-                  isToday(day) && "bg-indigo-500 font-bold text-white",
+                  day.outside && "text-[#d0d7de]",
+                  !day.outside && "text-[#1f2328]",
+                  isToday(day) && "bg-[#0969da] font-bold text-white",
                 )}
               >
                 {day.date}
@@ -153,7 +153,7 @@ export default function CalendarPage() {
                     key={e.id}
                     className={cn(
                       "mb-1 truncate rounded-md px-1.5 py-0.5 text-[10px] font-semibold",
-                      platformColors[e.platform.toLowerCase()] ?? "bg-indigo-100 text-indigo-700",
+                      platformColors[e.platform.toLowerCase()] ?? "bg-[#ddf4ff] text-[#0969da]",
                     )}
                   >
                     {e.platform}
@@ -166,8 +166,8 @@ export default function CalendarPage() {
 
       {!entries?.length && (
         <div className="flex flex-col items-center justify-center py-8">
-          <Calendar size={28} className="text-slate-200" />
-          <p className="mt-2 text-sm text-slate-400">No posts scheduled this month</p>
+          <Calendar size={24} className="text-[#d0d7de]" />
+          <p className="mt-2 text-[13px] text-[#656d76]">No posts scheduled this month</p>
         </div>
       )}
     </div>

@@ -90,6 +90,15 @@ export interface ConnectorInfo {
   }
 }
 
+export interface ProviderInfo {
+  name: string
+  source: string
+  type: "cli" | "server" | "cloud" | "parasited"
+  model: string | null
+  isLocal: boolean
+  models: string[]
+}
+
 export interface StatsResponse {
   drafts: DraftCounts
   projects: number
@@ -147,6 +156,9 @@ export const api = {
   connectors: {
     list: () => request<ConnectorInfo[]>("/api/connectors"),
     capabilities: (id: string) => request(`/api/connectors/${id}/capabilities`),
+  },
+  providers: {
+    list: () => request<ProviderInfo[]>("/api/providers"),
   },
   plugins: {
     list: () => request<ConnectorInfo[]>("/api/plugins"),
