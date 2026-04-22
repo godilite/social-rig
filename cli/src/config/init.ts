@@ -8,6 +8,8 @@ import { TONE_OPTIONS } from "./schema.js"
 import { saveConfig, configExists, DEFAULT_CONFIG } from "./loader.js"
 import { detectProviders } from "../ai/detect.js"
 import { printCompactBanner } from "../ui/banner.js"
+import { createProject, getProjectByName, updateProjectProfile } from "../db/projects.js"
+import { buildProfile } from "../analyzer/profile.js"
 
 interface RepoManifest {
   name: string
@@ -378,6 +380,40 @@ export async function runInit(repo: string, options: { name?: string }) {
   writeFileSync(ignorePath, IGNORE_DEFAULTS, "utf-8")
 
   writeSpinner.succeed("Configuration saved")
+
+  const dbSpinner = ora({
+    text: "Registering project...",
+    indent: 2,
+  }).start()
+
+  const existing = getProjectByName(projectName)
+  let projectId: string
+  if (existing) {
+    projectId = existing.id
+    dbSpinner.succeed("Project already registered")
+  } else {
+    const row = createProject({
+      name: projectName,
+      repo: repoPath,
+      description: manifest.description,
+      configPath: resolve(repoPath, ".social-rig", "config.yaml"),
+    })
+    projectId = row.id
+    dbSpinner.succeed("Project registered")
+  }
+
+  const profileSpinner = ora({
+    text: "Building project profile...",
+    indent: 2,
+  }).start()
+
+  try {
+    const profile = await buildProfile(repoPath)
+    updateProjectProfile(projectId, JSON.stringify(profile))
+    profileSpinner.succeed("Project profile built")
+  } catch {
+    profileSpinner.warn("Could not build full profile (generate will still work with basics)")
+  }
 
   console.log(
     chalk.bold(
