@@ -7,6 +7,7 @@ import type { ProjectConfig, Platform, DetectedProvider, ContentType } from "../
 import { TONE_OPTIONS } from "./schema.js"
 import { saveConfig, configExists, DEFAULT_CONFIG } from "./loader.js"
 import { detectProviders } from "../ai/detect.js"
+import { printCompactBanner } from "../ui/banner.js"
 
 interface RepoManifest {
   name: string
@@ -178,8 +179,9 @@ vendor
 export async function runInit(repo: string, options: { name?: string }) {
   const repoPath = resolve(repo)
 
+  printCompactBanner()
   console.log(
-    chalk.bold(`\n  ${chalk.hex("#6366f1")("◆")} social-rig init\n`),
+    chalk.bold(`  ${chalk.hex("#6366f1")("◆")} Setting up your project...\n`),
   )
 
   if (configExists(repoPath)) {

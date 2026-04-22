@@ -9,13 +9,19 @@ import { statusCommand } from "./commands/status.js"
 import { pluginCommand } from "./commands/plugin.js"
 import { dashboardCommand } from "./commands/dashboard.js"
 import { profileCommand } from "./commands/profile.js"
+import { printBanner } from "./ui/banner.js"
+
+const VERSION = "0.1.0"
 
 const program = new Command()
 
 program
   .name("social-rig")
   .description("Turn your repo into a marketing machine")
-  .version("0.1.0")
+  .version(VERSION)
+  .action(() => {
+    printBanner(VERSION)
+  })
 
 program.addCommand(initCommand)
 program.addCommand(generateCommand)
