@@ -1,6 +1,8 @@
 import { Hono } from "hono"
 import { listProjects, getProject } from "../../db/projects.js"
-import { loadConfig, saveConfig } from "../../config/loader.js"
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs"
+import { parse, stringify } from "yaml"
+import { dirname } from "node:path"
 
 const app = new Hono()
 
@@ -14,9 +16,10 @@ app.get("/:id", (c) => {
   if (!project) return c.json({ error: "Project not found" }, 404)
 
   let config = null
-  if (project.config_path) {
+  if (project.config_path && existsSync(project.config_path)) {
     try {
-      config = loadConfig(project.config_path)
+      const raw = readFileSync(project.config_path, "utf-8")
+      config = parse(raw)
     } catch {
       config = null
     }
@@ -33,10 +36,15 @@ app.put("/:id/config", async (c) => {
   const body = await c.req.json()
 
   try {
-    saveConfig(project.config_path, body)
+    const dir = dirname(project.config_path)
+    if (!existsSync(dir)) {
+      mkdirSync(dir, { recursive: true })
+    }
+    writeFileSync(project.config_path, stringify(body, { lineWidth: 120 }), "utf-8")
     return c.json({ ok: true })
-  } catch {
-    return c.json({ error: "Failed to save config" }, 500)
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Unknown error"
+    return c.json({ error: `Failed to save config: ${msg}` }, 500)
   }
 })
 
