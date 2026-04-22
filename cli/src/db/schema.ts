@@ -66,10 +66,5 @@ export const migrations: string[] = [
     details_json TEXT DEFAULT '{}',
     created_at TEXT DEFAULT (datetime('now'))
   );
-
-  CREATE TABLE IF NOT EXISTS migrations (
-    id INTEGER PRIMARY KEY,
-    applied_at TEXT DEFAULT (datetime('now'))
-  );
   `,
 ]

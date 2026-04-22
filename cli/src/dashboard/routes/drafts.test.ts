@@ -6,6 +6,9 @@ import { migrations } from "../../db/schema.js"
 function setupDb(): Database.Database {
   const db = new Database(":memory:")
   db.pragma("foreign_keys = ON")
+  db.exec(
+    "CREATE TABLE IF NOT EXISTS migrations (id INTEGER PRIMARY KEY, applied_at TEXT DEFAULT (datetime('now')))"
+  )
   db.exec(migrations[0])
   db.prepare("INSERT INTO migrations (id) VALUES (?)").run(1)
   return db

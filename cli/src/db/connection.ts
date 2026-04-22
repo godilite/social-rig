@@ -9,6 +9,10 @@ export type { Database }
 let instance: Database.Database | null = null
 
 function runMigrations(db: Database.Database): void {
+  db.exec(
+    "CREATE TABLE IF NOT EXISTS migrations (id INTEGER PRIMARY KEY, applied_at TEXT DEFAULT (datetime('now')))"
+  )
+
   for (let i = 0; i < migrations.length; i++) {
     const migrationId = i + 1
     const existing = db
