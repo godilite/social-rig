@@ -44,7 +44,12 @@ export async function createProvider(config: {
       const { OllamaProvider } = await import("./ollama.js")
       return new OllamaProvider(model)
     }
-    case "auto": {
+    case "auto":
+    case "copilot":
+    case "cursor":
+    case "aider":
+    case "continue":
+    case "claude-cli": {
       return await autoDetectProvider(model)
     }
     default:
