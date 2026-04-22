@@ -10,7 +10,7 @@ import { logActivity } from "../db/activity.js"
 import { CONTENT_TYPE_LABELS, FRAMEWORK_LABELS } from "../config/schema.js"
 import type { ProjectProfile } from "../types.js"
 
-export async function runGenerate(options: { count: string; project?: string; all?: boolean }) {
+export async function runGenerate(options: { count: string; project?: string; all?: boolean; provider?: string; model?: string }) {
   const spinner = ora("Loading configuration...").start()
 
   try {
@@ -53,7 +53,12 @@ export async function runGenerate(options: { count: string; project?: string; al
     }
 
     spinner.text = `Planned ${plan.items.length} content items. Connecting to AI provider...`
-    const provider = await createProvider(config.ai)
+    const aiConfig = {
+      ...config.ai,
+      ...(options.provider && { provider: options.provider }),
+      ...(options.model && { model: options.model }),
+    }
+    const provider = await createProvider(aiConfig)
 
     spinner.text = `Generating ${plan.items.length} drafts with ${provider.name}...`
     const drafts = await generateDrafts(plan, profile, provider, config.voice)

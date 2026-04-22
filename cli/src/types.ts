@@ -141,9 +141,11 @@ export interface ProjectConfig {
 export interface DetectedProvider {
   name: string
   source: string
+  type: "cli" | "server" | "cloud" | "parasited"
   model?: string
   apiKey?: string
   isLocal: boolean
+  models?: string[]
 }
 
 export interface CapabilityFlags {
