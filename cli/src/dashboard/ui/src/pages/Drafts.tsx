@@ -1,9 +1,9 @@
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { createPortal } from "react-dom"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { api } from "../lib/api"
 import type { DraftRow, DraftWithVariants } from "../lib/api"
-import { X, Check, Trash2, FileText, Eye, ChevronRight, Hash, ExternalLink } from "lucide-react"
+import { X, Check, Trash2, FileText, Eye, ChevronRight, Hash, ExternalLink, ImagePlus, Upload } from "lucide-react"
 import { cn, formatRelativeTime } from "../lib/utils"
 
 const statusConfig: Record<string, { label: string; bg: string; text: string; dot: string }> = {
@@ -285,7 +285,42 @@ function DraftDetail({
   onApprove: () => void
   onReject: () => void
 }) {
+  const queryClient = useQueryClient()
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [urlInput, setUrlInput] = useState("")
+  const [showUrlInput, setShowUrlInput] = useState(false)
   const sourceFacts = draft.source_facts_json ? JSON.parse(draft.source_facts_json) : null
+
+  const uploadImage = useMutation({
+    mutationFn: (file: File) => api.images.upload(draft.id, file),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["draft", draft.id] })
+    },
+  })
+
+  const addImageUrl = useMutation({
+    mutationFn: (url: string) => api.images.addUrl(draft.id, url),
+    onSuccess: () => {
+      setUrlInput("")
+      setShowUrlInput(false)
+      queryClient.invalidateQueries({ queryKey: ["draft", draft.id] })
+    },
+  })
+
+  const removeImage = useMutation({
+    mutationFn: () => api.images.remove(draft.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["draft", draft.id] })
+    },
+  })
+
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (file) uploadImage.mutate(file)
+    if (fileInputRef.current) fileInputRef.current.value = ""
+  }
+
+  const imageFilename = draft.image_path ? draft.image_path.split("/").pop() ?? null : null
 
   return (
     <div className="scrollbar-thin fixed inset-y-0 right-0 z-50 w-full max-w-[560px] overflow-y-auto bg-white shadow-2xl">
@@ -324,6 +359,91 @@ function DraftDetail({
             </button>
           </div>
         )}
+
+        <div>
+          <h3 className="mb-3 flex items-center gap-2 text-[12px] font-semibold uppercase tracking-wider text-[#656d76]">
+            <ImagePlus size={14} /> Image
+          </h3>
+          {imageFilename ? (
+            <div className="overflow-hidden rounded-lg border border-[#d0d7de]">
+              <img
+                src={api.images.url(imageFilename)}
+                alt="Draft image"
+                className="w-full object-cover"
+                style={{ maxHeight: "280px" }}
+              />
+              <div className="flex items-center justify-between border-t border-[#d0d7de] bg-[#f6f8fa] px-4 py-2.5">
+                <span className="text-[12px] text-[#656d76]">{imageFilename}</span>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    className="rounded-md px-2.5 py-1 text-[12px] font-medium text-[#0969da] transition-colors hover:bg-[#ddf4ff]"
+                  >
+                    Replace
+                  </button>
+                  <button
+                    onClick={() => removeImage.mutate()}
+                    className="rounded-md px-2.5 py-1 text-[12px] font-medium text-[#cf222e] transition-colors hover:bg-[#ffebe9]"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="rounded-lg border border-dashed border-[#d0d7de] bg-[#f6f8fa] p-6 text-center">
+              <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-[#eaeef2]">
+                <Upload size={18} className="text-[#656d76]" />
+              </div>
+              <p className="mt-3 text-[13px] font-medium text-[#1f2328]">Add an image</p>
+              <p className="mt-1 text-[12px] text-[#8b949e]">Upload a file or paste a URL</p>
+              <div className="mt-4 flex items-center justify-center gap-3">
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="rounded-md bg-[#24292f] px-3.5 py-2 text-[12px] font-semibold text-white transition-colors hover:bg-[#32383f]"
+                >
+                  Upload File
+                </button>
+                <button
+                  onClick={() => setShowUrlInput(!showUrlInput)}
+                  className="rounded-md border border-[#d0d7de] bg-white px-3.5 py-2 text-[12px] font-semibold text-[#24292f] transition-colors hover:bg-[#f6f8fa]"
+                >
+                  From URL
+                </button>
+              </div>
+              {showUrlInput && (
+                <div className="mt-3 flex gap-2">
+                  <input
+                    type="url"
+                    value={urlInput}
+                    onChange={(e) => setUrlInput(e.target.value)}
+                    placeholder="https://example.com/image.png"
+                    className="flex-1 rounded-md border border-[#d0d7de] px-3 py-1.5 text-[12px] text-[#1f2328] outline-none focus:border-[#0969da] focus:ring-2 focus:ring-[#ddf4ff]"
+                  />
+                  <button
+                    onClick={() => urlInput && addImageUrl.mutate(urlInput)}
+                    disabled={!urlInput || addImageUrl.isPending}
+                    className="rounded-md bg-[#0969da] px-3.5 py-1.5 text-[12px] font-semibold text-white transition-colors hover:bg-[#0860ca] disabled:opacity-50"
+                  >
+                    {addImageUrl.isPending ? "..." : "Add"}
+                  </button>
+                </div>
+              )}
+              {(uploadImage.isError || addImageUrl.isError) && (
+                <p className="mt-2 text-[12px] text-[#cf222e]">
+                  {uploadImage.error?.message || addImageUrl.error?.message}
+                </p>
+              )}
+            </div>
+          )}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/webp,image/gif"
+            className="hidden"
+            onChange={handleFileSelect}
+          />
+        </div>
 
         <div>
           <h3 className="mb-3 flex items-center gap-2 text-[12px] font-semibold uppercase tracking-wider text-[#656d76]">

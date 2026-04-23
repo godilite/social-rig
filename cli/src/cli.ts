@@ -10,6 +10,7 @@ import { pluginCommand } from "./commands/plugin.js"
 import { dashboardCommand } from "./commands/dashboard.js"
 import { profileCommand } from "./commands/profile.js"
 import { providerCommand } from "./commands/provider.js"
+import { imageCommand } from "./commands/image.js"
 import { printBanner } from "./ui/banner.js"
 
 const VERSION = "0.1.0"
@@ -33,5 +34,6 @@ program.addCommand(pluginCommand)
 program.addCommand(dashboardCommand)
 program.addCommand(profileCommand)
 program.addCommand(providerCommand)
+program.addCommand(imageCommand)
 
 program.parse()

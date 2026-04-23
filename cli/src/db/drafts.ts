@@ -188,6 +188,12 @@ export function deleteDraft(id: string, db = getDb()): void {
   db.prepare("DELETE FROM drafts WHERE id = ?").run(id)
 }
 
+export function updateDraftImagePath(id: string, imagePath: string | null, db = getDb()): void {
+  db.prepare(
+    `UPDATE drafts SET image_path = ?, updated_at = datetime('now') WHERE id = ?`,
+  ).run(imagePath, id)
+}
+
 export function getDraftCounts(
   projectId?: string,
   db = getDb(),

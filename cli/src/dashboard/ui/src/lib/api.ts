@@ -163,4 +163,24 @@ export const api = {
   plugins: {
     list: () => request<ConnectorInfo[]>("/api/plugins"),
   },
+  images: {
+    upload: async (draftId: string, file: File) => {
+      const formData = new FormData()
+      formData.append("image", file)
+      const res = await fetch(`${BASE}/api/images/upload/${draftId}`, {
+        method: "POST",
+        body: formData,
+      })
+      if (!res.ok) throw new Error(`${res.status} ${res.statusText}`)
+      return res.json() as Promise<{ imagePath: string; filename: string }>
+    },
+    addUrl: (draftId: string, url: string) =>
+      request<{ imagePath: string; filename: string }>(`/api/images/upload/${draftId}`, {
+        method: "POST",
+        body: JSON.stringify({ url }),
+      }),
+    remove: (draftId: string) =>
+      request(`/api/images/${draftId}`, { method: "DELETE" }),
+    url: (filename: string) => `${BASE}/api/images/${filename}`,
+  },
 }

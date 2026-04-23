@@ -120,6 +120,7 @@ function buildDefaultConfig(
     providerSource: string
     platforms: Platform[]
     imageGen: boolean
+    imageProvider: string
     contentTypes: ContentType[]
   },
 ): ProjectConfig {
@@ -143,6 +144,7 @@ function buildDefaultConfig(
     images: {
       ...DEFAULT_CONFIG.images,
       enabled: answers.imageGen,
+      provider: answers.imageProvider,
     },
     content: {
       ...DEFAULT_CONFIG.content,
@@ -352,6 +354,23 @@ export async function runInit(repo: string, options: { name?: string }) {
     },
   ])
 
+  let imageProvider = "openai"
+  if (imageGen) {
+    const { imgProvider } = await inquirer.prompt<{ imgProvider: string }>([
+      {
+        type: "list",
+        name: "imgProvider",
+        message: "Image provider:",
+        choices: [
+          { name: "OpenAI DALL-E 3 (requires OPENAI_API_KEY)", value: "openai" },
+          { name: "Stability AI SD3 (requires STABILITY_API_KEY)", value: "stability" },
+          { name: "Local Stable Diffusion (Automatic1111 on localhost:7860)", value: "local" },
+        ],
+      },
+    ])
+    imageProvider = imgProvider
+  }
+
   const config = buildDefaultConfig(manifest, {
     projectName,
     audience,
@@ -361,6 +380,7 @@ export async function runInit(repo: string, options: { name?: string }) {
     providerSource,
     platforms,
     imageGen,
+    imageProvider,
     contentTypes,
   })
 

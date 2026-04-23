@@ -61,7 +61,12 @@ export async function runGenerate(options: { count: string; project?: string; al
     const provider = await createProvider(aiConfig)
 
     spinner.text = `Generating ${plan.items.length} drafts with ${provider.name}...`
-    const drafts = await generateDrafts(plan, profile, provider, config.voice)
+    const { drafts, imageWarning } = await generateDrafts(plan, profile, provider, config.voice, config.images)
+
+    if (imageWarning) {
+      console.log("")
+      console.log(chalk.yellow(`  ⚠ ${imageWarning}`))
+    }
 
     spinner.text = "Saving drafts to database..."
     for (const draft of drafts) {

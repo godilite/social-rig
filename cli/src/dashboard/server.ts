@@ -13,6 +13,7 @@ import statsRoutes from "./routes/stats.js"
 import connectorsRoutes from "./routes/connectors.js"
 import pluginsRoutes from "./routes/plugins.js"
 import providersRoutes from "./routes/providers.js"
+import imagesRoutes from "./routes/images.js"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -53,6 +54,7 @@ function createApp(): Hono {
   app.route("/api/connectors", connectorsRoutes)
   app.route("/api/plugins", pluginsRoutes)
   app.route("/api/providers", providersRoutes)
+  app.route("/api/images", imagesRoutes)
 
   const uiDistDir = resolveUiDistDir()
 

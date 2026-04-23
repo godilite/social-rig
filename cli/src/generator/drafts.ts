@@ -5,6 +5,7 @@ import type {
   PlatformVariant,
   ProjectProfile,
   VoiceConfig,
+  ImageConfig,
   Platform,
 } from "../types.js"
 import type { AIProvider } from "../ai/provider.js"
@@ -12,6 +13,7 @@ import { applyFramework } from "./frameworks.js"
 import { validateGrounding, enforceBannedPhrases } from "./grounding.js"
 import { PLATFORM_CHAR_LIMITS, CONTENT_TYPE_LABELS } from "../config/schema.js"
 import { buildSkillContext } from "../skills/index.js"
+import { createImageGenerator, buildImagePrompt, saveGeneratedImage } from "./images.js"
 
 const PREAMBLE_PATTERNS = [
   /^(?:here(?:'s| is)(?: the| a| my| your)?[\s\w]*(?:post|draft|content|copy|tweet|version|text)[:\s]*\n*)/i,
@@ -178,9 +180,19 @@ export async function generateDrafts(
   profile: ProjectProfile,
   provider: AIProvider,
   voiceConfig: VoiceConfig,
-): Promise<Draft[]> {
+  imageConfig?: ImageConfig,
+): Promise<{ drafts: Draft[]; imageWarning?: string }> {
   const drafts: Draft[] = []
   const now = new Date().toISOString()
+
+  let imageGenerator: ReturnType<typeof createImageGenerator>["generator"] = null
+  let imageWarning: string | undefined
+
+  if (imageConfig) {
+    const result = createImageGenerator(imageConfig)
+    imageGenerator = result.generator
+    imageWarning = result.warning
+  }
 
   for (const item of plan.items) {
     const draftId = nanoid()
@@ -222,6 +234,20 @@ export async function generateDrafts(
 
     const _hasUngrounded = groundingResults.some((r) => !r.valid)
 
+    let imagePath: string | undefined
+    if (imageGenerator && imageConfig) {
+      try {
+        const prompt = buildImagePrompt(item.type, item.angle, profile, imageConfig)
+        const image = await imageGenerator.generate(prompt)
+        imagePath = await saveGeneratedImage(draftId, image)
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err)
+        imageWarning = imageWarning
+          ? `${imageWarning}\nImage generation failed for draft ${draftId}: ${msg}`
+          : `Image generation failed for draft ${draftId}: ${msg}`
+      }
+    }
+
     drafts.push({
       id: draftId,
       projectId: profile.name,
@@ -230,10 +256,11 @@ export async function generateDrafts(
       status: "pending",
       content: variants,
       sourceFacts: item.sourceFacts,
+      imagePath,
       createdAt: now,
       updatedAt: now,
     })
   }
 
-  return drafts
+  return { drafts, imageWarning }
 }
