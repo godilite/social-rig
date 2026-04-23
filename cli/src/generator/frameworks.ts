@@ -72,17 +72,28 @@ const FRAMEWORK_MAP: Record<CopyFramework, (ctx: FrameworkContext) => FrameworkP
   }),
 }
 
-const CONTENT_TYPE_FRAMEWORK_MAP: Record<ContentType, CopyFramework> = {
-  feature_highlight: "PAS",
-  release_announcement: "AIDA",
-  dev_tip: "BAB",
-  behind_the_scenes: "BAB",
-  tutorial_teaser: "AIDA",
-  milestone_celebration: "AIDA",
+const ALL_FRAMEWORKS: CopyFramework[] = ["PAS", "AIDA", "BAB"]
+
+const CONTENT_TYPE_PREFERRED: Record<ContentType, CopyFramework[]> = {
+  feature_highlight: ["PAS", "AIDA", "BAB"],
+  release_announcement: ["AIDA", "BAB", "PAS"],
+  dev_tip: ["BAB", "PAS", "AIDA"],
+  behind_the_scenes: ["BAB", "AIDA", "PAS"],
+  tutorial_teaser: ["AIDA", "PAS", "BAB"],
+  milestone_celebration: ["AIDA", "BAB", "PAS"],
 }
 
+let frameworkCounter = 0
+
 export function selectFramework(contentType: ContentType): CopyFramework {
-  return CONTENT_TYPE_FRAMEWORK_MAP[contentType]
+  const preferred = CONTENT_TYPE_PREFERRED[contentType] ?? ALL_FRAMEWORKS
+  const index = frameworkCounter % preferred.length
+  frameworkCounter++
+  return preferred[index]
+}
+
+export function resetFrameworkCounter(): void {
+  frameworkCounter = 0
 }
 
 export function applyFramework(framework: CopyFramework, context: FrameworkContext): FrameworkPrompt {

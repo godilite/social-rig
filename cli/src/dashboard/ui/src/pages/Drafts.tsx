@@ -209,14 +209,24 @@ export default function Drafts() {
 
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
-                  <p className="truncate text-[13px] font-semibold text-[#1f2328]">
+                  <p className="truncate text-[13px] font-semibold capitalize text-[#1f2328]">
                     {d.content_type.replace(/_/g, " ")}
                   </p>
                   <span className="shrink-0 rounded-full bg-[#f6f8fa] px-2 py-0.5 text-[11px] font-medium text-[#656d76]">
                     {d.framework}
                   </span>
                 </div>
-                <p className="mt-0.5 text-[12px] text-[#8b949e]">
+                {d.source_facts_json && (() => {
+                  try {
+                    const facts = JSON.parse(d.source_facts_json)
+                    const firstClaim = Array.isArray(facts) && facts[0]?.claim
+                    if (firstClaim) return (
+                      <p className="mt-0.5 truncate text-[12px] text-[#656d76]">{firstClaim}</p>
+                    )
+                  } catch {}
+                  return null
+                })()}
+                <p className="mt-0.5 text-[11px] text-[#8b949e]">
                   {formatRelativeTime(d.created_at)}
                 </p>
               </div>

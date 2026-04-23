@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest"
-import { selectFramework, applyFramework } from "./frameworks.js"
+import { describe, it, expect, beforeEach } from "vitest"
+import { selectFramework, applyFramework, resetFrameworkCounter } from "./frameworks.js"
 import type { FrameworkContext } from "./frameworks.js"
 import type { ContentType, CopyFramework } from "../types.js"
 
@@ -12,28 +12,38 @@ const baseContext: FrameworkContext = {
 }
 
 describe("selectFramework", () => {
-  it("maps feature_highlight to PAS", () => {
+  beforeEach(() => {
+    resetFrameworkCounter()
+  })
+
+  it("first call for feature_highlight returns PAS", () => {
     expect(selectFramework("feature_highlight")).toBe("PAS")
   })
 
-  it("maps release_announcement to AIDA", () => {
+  it("first call for release_announcement returns AIDA", () => {
     expect(selectFramework("release_announcement")).toBe("AIDA")
   })
 
-  it("maps behind_the_scenes to BAB", () => {
-    expect(selectFramework("behind_the_scenes")).toBe("BAB")
-  })
-
-  it("maps dev_tip to BAB", () => {
+  it("first call for dev_tip returns BAB", () => {
     expect(selectFramework("dev_tip")).toBe("BAB")
   })
 
-  it("maps tutorial_teaser to AIDA", () => {
-    expect(selectFramework("tutorial_teaser")).toBe("AIDA")
+  it("rotates through frameworks on repeated calls", () => {
+    const first = selectFramework("dev_tip")
+    const second = selectFramework("dev_tip")
+    const third = selectFramework("dev_tip")
+
+    expect(first).toBe("BAB")
+    expect(second).toBe("PAS")
+    expect(third).toBe("AIDA")
   })
 
-  it("maps milestone_celebration to AIDA", () => {
-    expect(selectFramework("milestone_celebration")).toBe("AIDA")
+  it("cycles back after exhausting all frameworks", () => {
+    selectFramework("feature_highlight")
+    selectFramework("feature_highlight")
+    selectFramework("feature_highlight")
+    const fourth = selectFramework("feature_highlight")
+    expect(fourth).toBe("PAS")
   })
 
   it("returns a valid framework for every content type", () => {

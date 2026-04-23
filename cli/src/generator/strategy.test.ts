@@ -1,5 +1,6 @@
-import { describe, it, expect } from "vitest"
+import { describe, it, expect, beforeEach } from "vitest"
 import { buildContentPlan } from "./strategy.js"
+import { resetFrameworkCounter } from "./frameworks.js"
 import type { ProjectProfile, ContentType, Platform } from "../types.js"
 
 function makeProfile(overrides: Partial<ProjectProfile> = {}): ProjectProfile {
@@ -34,6 +35,10 @@ const defaultConfig = {
 }
 
 describe("buildContentPlan", () => {
+  beforeEach(() => {
+    resetFrameworkCounter()
+  })
+
   it("triggers release_announcement when releases exist", () => {
     const profile = makeProfile({
       recentChanges: [
@@ -112,10 +117,9 @@ describe("buildContentPlan", () => {
 
     const plan = buildContentPlan(profile, defaultConfig)
 
+    const validFrameworks = ["PAS", "AIDA", "BAB"]
     for (const item of plan.items) {
-      if (item.type === "feature_highlight") expect(item.framework).toBe("PAS")
-      if (item.type === "release_announcement") expect(item.framework).toBe("AIDA")
-      if (item.type === "dev_tip") expect(item.framework).toBe("BAB")
+      expect(validFrameworks).toContain(item.framework)
     }
   })
 

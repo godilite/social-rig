@@ -131,6 +131,12 @@ export const api = {
   projects: {
     list: () => request<ProjectRow[]>("/api/projects"),
     get: (id: string) => request<ProjectRow>(`/api/projects/${id}`),
+    create: (data: { name: string; repo: string; description?: string }) =>
+      request<ProjectRow>("/api/projects", { method: "POST", body: JSON.stringify(data) }),
+    update: (id: string, data: { name?: string; repo?: string; description?: string }) =>
+      request<ProjectRow>(`/api/projects/${id}`, { method: "PATCH", body: JSON.stringify(data) }),
+    delete: (id: string) =>
+      request(`/api/projects/${id}`, { method: "DELETE" }),
     updateConfig: (id: string, config: Record<string, unknown>) =>
       request(`/api/projects/${id}/config`, {
         method: "PUT",

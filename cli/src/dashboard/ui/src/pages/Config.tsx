@@ -403,7 +403,31 @@ export default function Config() {
           </div>
           <div>
             <FieldLabel label="Model" htmlFor="ai-model" />
-            <TextInput id="ai-model" value={form.ai.model} onChange={(v) => updateForm("ai", { model: v })} placeholder="e.g. gpt-4o, claude-sonnet-4-20250514" />
+            {(() => {
+              const activeProvider = (providers ?? []).find((p: ProviderInfo) => p.name === form.ai.provider)
+              const models = activeProvider?.models ?? []
+              if (models.length > 0) {
+                return (
+                  <SelectInput
+                    id="ai-model"
+                    value={form.ai.model}
+                    onChange={(v) => updateForm("ai", { model: v })}
+                    options={[
+                      ...(form.ai.model && !models.includes(form.ai.model) ? [{ value: form.ai.model, label: form.ai.model }] : []),
+                      ...models.map((m: string) => ({ value: m, label: m })),
+                    ]}
+                  />
+                )
+              }
+              return (
+                <TextInput id="ai-model" value={form.ai.model} onChange={(v) => updateForm("ai", { model: v })} placeholder="e.g. gpt-4o, claude-sonnet-4-20250514" />
+              )
+            })()}
+            <p className="mt-1 text-[11px] text-[#8b949e]">
+              {(providers ?? []).find((p: ProviderInfo) => p.name === form.ai.provider)?.models?.length
+                ? "Models detected from your provider"
+                : "Type a model name or select a provider with detected models"}
+            </p>
           </div>
           <div className="md:col-span-2">
             <FieldLabel label="API key source" htmlFor="ai-key" />
@@ -538,7 +562,11 @@ export default function Config() {
                   id="img-provider"
                   value={form.images.provider}
                   onChange={(v) => updateForm("images", { provider: v })}
-                  options={[{ value: "openai", label: "OpenAI (DALL-E)" }]}
+                  options={[
+                    { value: "openai", label: "OpenAI (DALL-E 3)" },
+                    { value: "stability", label: "Stability AI (SD3)" },
+                    { value: "local", label: "Local Stable Diffusion" },
+                  ]}
                 />
               </div>
               <div>
