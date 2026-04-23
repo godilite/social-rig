@@ -6,7 +6,8 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatRelativeTime(dateStr: string): string {
-  const d = new Date(dateStr)
+  const normalized = dateStr.endsWith("Z") ? dateStr : dateStr.replace(" ", "T") + "Z"
+  const d = new Date(normalized)
   const now = new Date()
   const diff = now.getTime() - d.getTime()
   const mins = Math.floor(diff / 60000)
@@ -20,7 +21,8 @@ export function formatRelativeTime(dateStr: string): string {
 }
 
 export function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("en-US", {
+  const normalized = dateStr.endsWith("Z") ? dateStr : dateStr.replace(" ", "T") + "Z"
+  return new Date(normalized).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
     hour: "numeric",
