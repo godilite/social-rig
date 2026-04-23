@@ -11,6 +11,34 @@ import type { AIProvider } from "../ai/provider.js"
 import { applyFramework } from "./frameworks.js"
 import { validateGrounding, enforceBannedPhrases } from "./grounding.js"
 import { PLATFORM_CHAR_LIMITS, CONTENT_TYPE_LABELS } from "../config/schema.js"
+import { buildSkillContext } from "../skills/index.js"
+
+const PREAMBLE_PATTERNS = [
+  /^(?:here(?:'s| is)(?: the| a| my| your)?[\s\w]*(?:post|draft|content|copy|tweet|version|text)[:\s]*\n*)/i,
+  /^(?:sure[!,.]?\s*(?:here(?:'s| is))?[\s\w]*[:\s]*\n*)/i,
+  /^(?:absolutely[!,.]?\s*(?:here(?:'s| is))?[\s\w]*[:\s]*\n*)/i,
+  /^(?:of course[!,.]?\s*[\s\w]*[:\s]*\n*)/i,
+]
+
+function stripAiArtifacts(text: string): string {
+  let result = text.trim()
+
+  result = result.replace(/^["'`]+|["'`]+$/g, "")
+  result = result.replace(/^```[\w]*\n?|\n?```$/g, "")
+
+  for (const pattern of PREAMBLE_PATTERNS) {
+    result = result.replace(pattern, "")
+  }
+
+  result = result.replace(/\u2014/g, ". ")
+  result = result.replace(/\u2013/g, ", ")
+  result = result.replace(/ -- /g, ". ")
+  result = result.replace(/---+/g, "")
+
+  result = result.replace(/\n{3,}/g, "\n\n")
+
+  return result.trim()
+}
 
 const DEFAULT_BANNED = [
   "excited to announce",
@@ -37,8 +65,15 @@ function buildSystemPrompt(voice: VoiceConfig, platform: Platform, charLimit: nu
       : "",
     "Write in plain, authentic language. Be specific and concrete.",
     "Do not include hashtags in the body text. They will be added separately.",
-    "Do not wrap your response in quotes or add meta-commentary.",
-    "Return ONLY the post body text.",
+    "CRITICAL OUTPUT RULES:",
+    "- Return ONLY the post body text. Nothing else.",
+    "- Do NOT include any preamble like 'Here is the post:' or 'Here is a draft:'.",
+    "- Do NOT wrap your response in quotes, backticks, or markdown formatting.",
+    "- Do NOT use --- or -- as separators or horizontal rules.",
+    "- Do NOT use em-dashes. Use periods or commas instead.",
+    "- Do NOT add meta-commentary about the post.",
+    "- Do NOT describe what you are about to write. Just write it.",
+    "- The output must read as a real social media post, ready to publish as-is.",
   ]
     .filter(Boolean)
     .join("\n")
@@ -85,6 +120,7 @@ function suggestHashtags(profile: ProjectProfile, platform: Platform): string[] 
 
 async function generateVariant(
   provider: AIProvider,
+  contentType: ContentType,
   contentLabel: string,
   angle: string,
   frameworkStructure: string[],
@@ -95,11 +131,17 @@ async function generateVariant(
   profile: ProjectProfile,
 ): Promise<PlatformVariant> {
   const charLimit = PLATFORM_CHAR_LIMITS[platform]
+  const skillContext = buildSkillContext(contentType, platform)
 
   const systemPrompt = [
     frameworkSystemInstructions,
     "",
     buildSystemPrompt(voice, platform, charLimit),
+    "",
+    "--- Marketing Skills Context ---",
+    "Apply these principles naturally. Do not reference them explicitly in the output.",
+    "",
+    skillContext,
   ].join("\n")
 
   const structureText = frameworkStructure.map((s, i) => `${i + 1}. ${s}`).join("\n")
@@ -107,6 +149,8 @@ async function generateVariant(
   const userPrompt = buildUserPrompt(contentLabel, angle, structureText, facts)
 
   let body = await provider.generate(userPrompt, systemPrompt)
+
+  body = stripAiArtifacts(body)
 
   const bannedList = [...DEFAULT_BANNED, ...voice.avoid]
   const { clean, removed: _removed } = enforceBannedPhrases(body, bannedList)
@@ -159,6 +203,7 @@ export async function generateDrafts(
     for (const platform of item.targetPlatforms) {
       const variant = await generateVariant(
         provider,
+        item.type,
         contentLabel,
         item.angle,
         frameworkPrompt.structure,

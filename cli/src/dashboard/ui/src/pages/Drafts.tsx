@@ -19,6 +19,81 @@ const platformIcons: Record<string, string> = {
   linkedin: "in",
   devto: "DEV",
   hashnode: "#",
+  bluesky: "🦋",
+  mastodon: "🐘",
+  reddit: "r/",
+}
+
+const platformThemes: Record<string, { accent: string; bg: string; avatar: string; name: string }> = {
+  x: { accent: "#1f2328", bg: "#ffffff", avatar: "bg-[#1f2328]", name: "X (Twitter)" },
+  twitter: { accent: "#1f2328", bg: "#ffffff", avatar: "bg-[#1f2328]", name: "X (Twitter)" },
+  linkedin: { accent: "#0a66c2", bg: "#f3f6f8", avatar: "bg-[#0a66c2]", name: "LinkedIn" },
+  devto: { accent: "#1f2328", bg: "#fafafa", avatar: "bg-[#1f2328]", name: "Dev.to" },
+  hashnode: { accent: "#2962ff", bg: "#ffffff", avatar: "bg-[#2962ff]", name: "Hashnode" },
+  bluesky: { accent: "#0085ff", bg: "#ffffff", avatar: "bg-[#0085ff]", name: "Bluesky" },
+  mastodon: { accent: "#6364ff", bg: "#ffffff", avatar: "bg-[#6364ff]", name: "Mastodon" },
+  reddit: { accent: "#ff4500", bg: "#ffffff", avatar: "bg-[#ff4500]", name: "Reddit" },
+}
+
+function PostPreview({ body, headline }: { body: string; headline?: string | null }) {
+  const paragraphs = body.split(/\n{2,}/).filter(Boolean)
+
+  return (
+    <div className="space-y-2.5">
+      {headline && (
+        <h4 className="text-[15px] font-bold leading-snug text-[#1f2328]">{headline}</h4>
+      )}
+      {paragraphs.map((p, i) => {
+        const lines = p.split("\n")
+        return (
+          <div key={i} className="text-[13.5px] leading-[1.65] text-[#1f2328]">
+            {lines.map((line, j) => {
+              const rendered = renderLine(line)
+              return (
+                <span key={j}>
+                  {j > 0 && <br />}
+                  {rendered}
+                </span>
+              )
+            })}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function renderLine(line: string): React.ReactNode {
+  const parts: React.ReactNode[] = []
+  const regex = /(\*\*(.+?)\*\*)|(`(.+?)`)|(\[([^\]]+)\]\(([^)]+)\))/g
+  let lastIndex = 0
+  let match
+
+  while ((match = regex.exec(line)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(line.slice(lastIndex, match.index))
+    }
+    if (match[1]) {
+      parts.push(<strong key={match.index} className="font-semibold">{match[2]}</strong>)
+    } else if (match[3]) {
+      parts.push(
+        <code key={match.index} className="rounded bg-[#f6f8fa] px-1 py-0.5 font-mono text-[12px] text-[#0969da]">
+          {match[4]}
+        </code>
+      )
+    } else if (match[5]) {
+      parts.push(
+        <a key={match.index} href={match[7]} target="_blank" rel="noopener noreferrer" className="text-[#0969da] hover:underline">
+          {match[6]}
+        </a>
+      )
+    }
+    lastIndex = match.index + match[0].length
+  }
+  if (lastIndex < line.length) {
+    parts.push(line.slice(lastIndex))
+  }
+  return parts.length > 0 ? parts : line
 }
 
 function StatusBadge({ status }: { status: string }) {
@@ -257,35 +332,43 @@ function DraftDetail({
           <div className="space-y-4">
             {draft.variants.map((v) => {
               const hashtags = v.hashtags_json ? JSON.parse(v.hashtags_json) : []
+              const theme = platformThemes[v.platform.toLowerCase()] ?? platformThemes.x
               return (
                 <div
                   key={v.id}
-                  className="overflow-hidden rounded-md border border-[#d0d7de]"
+                  className="overflow-hidden rounded-lg border border-[#d0d7de] shadow-sm"
                 >
-                  <div className="flex items-center justify-between border-b border-[#d0d7de] bg-[#f6f8fa] px-4 py-2.5">
-                    <div className="flex items-center gap-2">
-                      <span className="flex h-6 w-6 items-center justify-center rounded-md bg-[#24292f] text-[10px] font-bold text-white">
+                  <div className="flex items-center justify-between border-b border-[#d0d7de] bg-[#f6f8fa] px-4 py-3">
+                    <div className="flex items-center gap-2.5">
+                      <span className={cn("flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-bold text-white", theme.avatar)}>
                         {platformIcons[v.platform.toLowerCase()] ?? v.platform[0]?.toUpperCase()}
                       </span>
-                      <span className="text-[13px] font-semibold text-[#1f2328]">{v.platform}</span>
+                      <div>
+                        <span className="text-[13px] font-semibold text-[#1f2328]">{theme.name}</span>
+                        <span className="ml-2 text-[11px] text-[#8b949e]">Preview</span>
+                      </div>
                     </div>
                     {v.char_count && (
-                      <span className="text-[11px] text-[#8b949e]">{v.char_count} chars</span>
+                      <span className={cn(
+                        "rounded-full px-2 py-0.5 text-[11px] font-medium",
+                        v.char_count > 250 && v.platform.toLowerCase() === "x"
+                          ? "bg-[#ffebe9] text-[#cf222e]"
+                          : "bg-[#f6f8fa] text-[#8b949e]",
+                      )}>
+                        {v.char_count} chars
+                      </span>
                     )}
                   </div>
-                  <div className="p-4">
-                    {v.headline && (
-                      <p className="mb-2 text-sm font-semibold text-[#1f2328]">{v.headline}</p>
-                    )}
-                    <div className="whitespace-pre-wrap text-[13px] leading-relaxed text-[#1f2328]">
-                      {v.body}
-                    </div>
+
+                  <div className="bg-white p-5">
+                    <PostPreview body={v.body} headline={v.headline} />
+
                     {hashtags.length > 0 && (
-                      <div className="mt-3 flex flex-wrap gap-1.5">
+                      <div className="mt-4 flex flex-wrap gap-1.5 border-t border-[#d8dee4] pt-3">
                         {hashtags.map((tag: string, i: number) => (
                           <span
                             key={i}
-                            className="inline-flex items-center gap-0.5 rounded-full bg-[#ddf4ff] px-2 py-0.5 text-[11px] font-medium text-[#0969da]"
+                            className="inline-flex items-center gap-0.5 rounded-full bg-[#ddf4ff] px-2.5 py-0.5 text-[11px] font-medium text-[#0969da]"
                           >
                             <Hash size={10} />
                             {tag.replace(/^#/, "")}
